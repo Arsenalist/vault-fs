@@ -1,0 +1,15 @@
+vault:
+  path: ~/vault-fs
+
+presets:
+  basic:
+    directories:
+      - Daily Debrief
+      - Daily Plan
+      - Journal
+      - Meeting Notes
+      - Projects/Active
+      - Projects/Archived
+      - Reports
+      - Scratchpad
+      - Stakeholders

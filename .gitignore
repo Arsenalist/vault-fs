@@ -1,0 +1,21 @@
+# Binary
+/vaultfs
+/vaultfs.exe
+
+# Search index (per-vault, rebuilt on demand)
+index.bleve/
+
+# Go
+*.test
+*.out
+coverage.html
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
