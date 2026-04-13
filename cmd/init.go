@@ -131,7 +131,7 @@ func runInit(vaultPath string, preset string, extraDirs []string) error {
 	}
 
 	// Write README.md
-	readme := fmt.Sprintf("# Vault\n\nManaged by [vaultfs](https://github.com/zarar/vaultfs).\n")
+	readme := fmt.Sprintf("# Vault\n\nManaged by [vault-fs](https://github.com/zarar/vaultfs).\n")
 	if err := os.WriteFile(filepath.Join(vaultPath, "README.md"), []byte(readme), 0644); err != nil {
 		return fmt.Errorf("failed to write README.md: %w", err)
 	}

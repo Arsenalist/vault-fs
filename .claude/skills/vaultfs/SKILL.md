@@ -1,5 +1,5 @@
 ---
-name: vaultfs
+name: vault-fs
 description: >
   Use this skill whenever the user wants Claude to interact with a markdown vault
   — creating or reading notes, searching content, listing or extracting tasks,
@@ -12,7 +12,7 @@ description: >
   doesn't involve a vault.
 ---
 
-# vaultfs
+# vault-fs
 
 A platform-agnostic CLI for managing markdown-based knowledge vaults. Designed for AI agent consumption with JSON-first output.
 
@@ -23,13 +23,13 @@ A platform-agnostic CLI for managing markdown-based knowledge vaults. Designed f
 
 | Requirement | Details |
 |---|---|
-| Go binary | `vaultfs` must be installed and in PATH |
-| Vault initialized | Run `vaultfs init` first, or it falls back to `~/vault-fs` |
+| Go binary | `vault-fs` must be installed and in PATH |
+| Vault initialized | Run `vault-fs init` first, or it falls back to `~/vault-fs` |
 
 ## Syntax
 
 ```bash
-vaultfs <command> [subcommand] [--flags]
+vault-fs <command> [subcommand] [--flags]
 ```
 
 ### Global Flags
@@ -41,7 +41,7 @@ vaultfs <command> [subcommand] [--flags]
 
 ### Vault Discovery
 
-When `--vault` is not specified, vaultfs resolves the vault by:
+When `--vault` is not specified, vault-fs resolves the vault by:
 1. `VAULTFS_PATH` environment variable
 2. Walk up from CWD looking for `.vaultfs/` directory
 3. Fall back to `~/vault-fs`
@@ -72,141 +72,141 @@ When `--vault` is not specified, vaultfs resolves the vault by:
 
 ```bash
 # Initialize with default preset
-vaultfs init --preset=basic
+vault-fs init --preset=basic
 
 # Initialize at custom path with extra dirs
-vaultfs init --path=/tmp/my-vault --preset=basic --dirs="clients/acme,labs"
+vault-fs init --path=/tmp/my-vault --preset=basic --dirs="clients/acme,labs"
 
 # List available presets
-vaultfs init --list-presets
+vault-fs init --list-presets
 
 # Vault info
-vaultfs info
+vault-fs info
 ```
 
 ### Creating & Reading Files
 
 ```bash
 # Create (auto-adds .md, auto-creates parent dirs)
-vaultfs create notes/standup --content="# Standup\n\nToday's notes"
+vault-fs create notes/standup --content="# Standup\n\nToday's notes"
 
 # Create with append mode (appends if file exists)
-vaultfs create notes/standup --content="\n- New item" --append
+vault-fs create notes/standup --content="\n- New item" --append
 
 # Read (returns JSON with frontmatter + body separated)
-vaultfs read notes/standup.md
+vault-fs read notes/standup.md
 
 # Append (creates file if missing)
-vaultfs append notes/standup.md --content="\n## Update\nNew section"
+vault-fs append notes/standup.md --content="\n## Update\nNew section"
 
 # Prepend (inserts after frontmatter)
-vaultfs prepend notes/standup.md --content="**Priority: High**\n\n"
+vault-fs prepend notes/standup.md --content="**Priority: High**\n\n"
 
 # Move / rename
-vaultfs move notes/old.md --to=archive/old.md
+vault-fs move notes/old.md --to=archive/old.md
 
 # Delete
-vaultfs delete notes/old.md
+vault-fs delete notes/old.md
 ```
 
 ### File Discovery
 
 ```bash
 # List all markdown files
-vaultfs list
+vault-fs list
 
 # Filter by folder
-vaultfs list --folder=projects
+vault-fs list --folder=projects
 
 # Filter by extension
-vaultfs list --ext=txt
+vault-fs list --ext=txt
 
 # List folders
-vaultfs folders
+vault-fs folders
 
 # Create directory
-vaultfs mkdir projects/2026/q2
+vault-fs mkdir projects/2026/q2
 ```
 
 ### Recent Files
 
 ```bash
 # Last 7 days, max 20
-vaultfs recent
+vault-fs recent
 
 # Custom window
-vaultfs recent --days=30 --limit=50 --folder=projects
+vault-fs recent --days=30 --limit=50 --folder=projects
 ```
 
 ### Search
 
 ```bash
 # Full-text search (AND semantics: all terms required, lazy-rebuilds index)
-vaultfs search "quarterly review"
+vault-fs search "quarterly review"
 
 # Exact phrase match
-vaultfs search "quarterly review" --exact
+vault-fs search "quarterly review" --exact
 
 # Scoped to folder
-vaultfs search "budget" --folder=projects --limit=5
+vault-fs search "budget" --folder=projects --limit=5
 
 # Fuzzy filename matching
-vaultfs search "standup" --fuzzy
+vault-fs search "standup" --fuzzy
 
 # Search with matching line context
-vaultfs search:context "TODO"
+vault-fs search:context "TODO"
 
 # Force rebuild index
-vaultfs index rebuild
+vault-fs index rebuild
 ```
 
 ### Tags
 
 ```bash
 # All tags
-vaultfs tags
+vault-fs tags
 
 # Tags with counts, sorted
-vaultfs tags --counts --sort=count
+vault-fs tags --counts --sort=count
 
 # Files with specific tag
-vaultfs tag project
-vaultfs tag "project/alpha"
+vault-fs tag project
+vault-fs tag "project/alpha"
 ```
 
 ### Tasks
 
 ```bash
 # All tasks (returns JSON with priority, due, tags, mentions)
-vaultfs tasks
+vault-fs tasks
 
 # Filter
-vaultfs tasks --pending
-vaultfs tasks --done
-vaultfs tasks --folder=projects
+vault-fs tasks --pending
+vault-fs tasks --done
+vault-fs tasks --folder=projects
 
 # Toggle checkbox
-vaultfs task toggle notes/todo.md --line=5
+vault-fs task toggle notes/todo.md --line=5
 ```
 
 ### Frontmatter Properties
 
 ```bash
 # Read all properties
-vaultfs properties notes/standup.md
+vault-fs properties notes/standup.md
 
 # Set property (creates frontmatter if missing)
-vaultfs property set notes/standup.md --name=status --value=active
+vault-fs property set notes/standup.md --name=status --value=active
 
 # Remove property
-vaultfs property remove notes/standup.md --name=draft
+vault-fs property remove notes/standup.md --name=draft
 ```
 
 ### Outline
 
 ```bash
 # Heading tree
-vaultfs outline notes/design.md
+vault-fs outline notes/design.md
 ```
 
 ## Common Agent Patterns
@@ -215,44 +215,44 @@ vaultfs outline notes/design.md
 
 ```bash
 DATE=$(date +%Y-%m-%d)
-vaultfs create "Daily Plan/$DATE" --content="---\ndate: $DATE\n---\n\n## Plan\n\n- [ ] \n\n## Notes\n"
+vault-fs create "Daily Plan/$DATE" --content="---\ndate: $DATE\n---\n\n## Plan\n\n- [ ] \n\n## Notes\n"
 ```
 
 ### Create Note with Properties
 
 ```bash
-vaultfs create projects/new-feature --content="# New Feature\n\nDescription here."
-vaultfs property set projects/new-feature.md --name=status --value=planning
-vaultfs property set projects/new-feature.md --name=priority --value=high
+vault-fs create projects/new-feature --content="# New Feature\n\nDescription here."
+vault-fs property set projects/new-feature.md --name=status --value=planning
+vault-fs property set projects/new-feature.md --name=priority --value=high
 ```
 
 ### Task Dashboard
 
 ```bash
 # Get all pending tasks as JSON
-vaultfs tasks --pending
+vault-fs tasks --pending
 
 # Get tasks from a specific area
-vaultfs tasks --pending --folder=projects
+vault-fs tasks --pending --folder=projects
 ```
 
 ### Search and Read Workflow
 
 ```bash
 # Find relevant files
-vaultfs search "authentication" --limit=5
+vault-fs search "authentication" --limit=5
 
 # Read the top result
-vaultfs read path/to/result.md
+vault-fs read path/to/result.md
 ```
 
 ### Vault Analytics
 
 ```bash
-vaultfs info                          # File/folder counts
-vaultfs tags --counts --sort=count    # Most used tags
-vaultfs tasks --pending               # Open tasks
-vaultfs recent --days=1               # Today's activity
+vault-fs info                          # File/folder counts
+vault-fs tags --counts --sort=count    # Most used tags
+vault-fs tasks --pending               # Open tasks
+vault-fs recent --days=1               # Today's activity
 ```
 
 ## Tips
@@ -268,4 +268,4 @@ vaultfs recent --days=1               # Today's activity
 9. **Config is per-vault** — `.vaultfs/config.yaml` stores presets and settings.
 10. **Use `--format=text`** when you want human-readable output from query commands.
 11. **Directories with spaces work** — the basic preset includes "Daily Debrief", "Meeting Notes", etc.
-12. **Run `vaultfs help`** for comprehensive built-in usage guide covering all commands and flags.
+12. **Run `vault-fs help`** for comprehensive built-in usage guide covering all commands and flags.

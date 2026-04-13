@@ -1,10 +1,10 @@
-# vaultfs
+# vault-fs
 
 A platform-agnostic CLI for managing markdown-based knowledge vaults. Built for AI agents, usable by humans.
 
 ## What is it?
 
-vaultfs gives you a single binary to create, read, search, and organize markdown files in a structured vault — no Obsidian, no GUI, no runtime dependencies. Every query command returns JSON by default so agents can parse results without extra tooling.
+vault-fs gives you a single binary to create, read, search, and organize markdown files in a structured vault — no Obsidian, no GUI, no runtime dependencies. Every query command returns JSON by default so agents can parse results without extra tooling.
 
 ## Install
 
@@ -17,32 +17,32 @@ Or build from source:
 ```bash
 git clone https://github.com/zarar/vaultfs.git
 cd vaultfs
-go build -o vaultfs .
+go build -o vault-fs .
 ```
 
 ## Quick Start
 
 ```bash
 # Initialize a vault with the basic preset
-vaultfs init --preset=basic
+vault-fs init --preset=basic
 
 # Create a note (auto-adds .md, auto-creates parent dirs)
-vaultfs create "Daily Plan/2026-04-13" --content="## Priorities\n\n- [ ] Ship feature\n- [ ] Review PRs"
+vault-fs create "Daily Plan/2026-04-13" --content="## Priorities\n\n- [ ] Ship feature\n- [ ] Review PRs"
 
 # Read it back (JSON with parsed frontmatter)
-vaultfs read "Daily Plan/2026-04-13.md"
+vault-fs read "Daily Plan/2026-04-13.md"
 
 # Search across all files (AND semantics)
-vaultfs search "ship feature"
+vault-fs search "ship feature"
 
 # List pending tasks
-vaultfs tasks --pending
+vault-fs tasks --pending
 
 # See all tags with usage counts
-vaultfs tags --counts --sort=count
+vault-fs tags --counts --sort=count
 
 # Get comprehensive help
-vaultfs help
+vault-fs help
 ```
 
 ## Features
@@ -112,11 +112,11 @@ presets:
       - Stakeholders
 ```
 
-Add your own presets and use them with `vaultfs init --preset=<name>`.
+Add your own presets and use them with `vault-fs init --preset=<name>`.
 
 ## Claude Code Skill
 
-vaultfs ships with a [Claude Code skill](.claude/skills/vaultfs/SKILL.md) that teaches AI agents how to use every command. When working in a project with vaultfs, Claude automatically knows how to create notes, search content, extract tasks, manage tags, and more.
+vault-fs ships with a [Claude Code skill](.claude/skills/vaultfs/SKILL.md) that teaches AI agents how to use every command. When working in a project with vault-fs, Claude automatically knows how to create notes, search content, extract tasks, manage tags, and more.
 
 The skill includes:
 - Full command overview with examples
@@ -140,7 +140,7 @@ The skill includes:
 go test ./...
 
 # Build
-go build -o vaultfs .
+go build -o vault-fs .
 
 # Vet
 go vet ./...

@@ -14,9 +14,9 @@ var (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "vaultfs",
+	Use:   "vault-fs",
 	Short: "A platform-agnostic markdown vault manager for AI agents",
-	Long:  "vaultfs is a CLI tool for managing markdown-based knowledge vaults. It provides file CRUD, search, tag/task extraction, and frontmatter management with JSON-first output for agent consumption.",
+	Long:  "vault-fs is a CLI tool for managing markdown-based knowledge vaults. It provides file CRUD, search, tag/task extraction, and frontmatter management with JSON-first output for agent consumption.",
 }
 
 func Execute() {

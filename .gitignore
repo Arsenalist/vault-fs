@@ -1,6 +1,6 @@
 # Binary
-/vaultfs
-/vaultfs.exe
+/vault-fs
+/vault-fs.exe
 
 # Search index (per-vault, rebuilt on demand)
 index.bleve/

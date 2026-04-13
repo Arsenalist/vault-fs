@@ -1,8 +1,8 @@
-# vaultfs — Full Command Reference
+# vault-fs — Full Command Reference
 
-Complete reference for all vaultfs CLI commands.
+Complete reference for all vault-fs CLI commands.
 
-**Syntax**: `vaultfs <command> [subcommand] [--flags]`
+**Syntax**: `vault-fs <command> [subcommand] [--flags]`
 
 **Global Flags**:
 | Flag | Type | Default | Description |
@@ -28,7 +28,7 @@ Complete reference for all vaultfs CLI commands.
 
 ## Vault Management
 
-### `vaultfs init`
+### `vault-fs init`
 
 Initialize a new vault.
 
@@ -42,15 +42,15 @@ Initialize a new vault.
 **Output**: Text (action command)
 
 ```bash
-vaultfs init --path=/tmp/vault --preset=basic
-vaultfs init --preset=basic --dirs="clients/acme,labs"
-vaultfs init --list-presets
+vault-fs init --path=/tmp/vault --preset=basic
+vault-fs init --preset=basic --dirs="clients/acme,labs"
+vault-fs init --list-presets
 ```
 
 **Default presets**:
 - `basic`: Daily Debrief, Daily Plan, Journal, Meeting Notes, Projects/Active, Projects/Archived, Reports, Scratchpad, Stakeholders
 
-### `vaultfs info`
+### `vault-fs info`
 
 Display vault metadata.
 
@@ -72,7 +72,7 @@ Display vault metadata.
 
 ## File Operations
 
-### `vaultfs create <path>`
+### `vault-fs create <path>`
 
 Create a new markdown file.
 
@@ -87,7 +87,7 @@ Create a new markdown file.
 - Parent directories are created automatically
 - Errors if file exists (unless `--append` is set)
 
-### `vaultfs read <path>`
+### `vault-fs read <path>`
 
 Read a file with parsed frontmatter.
 
@@ -103,7 +103,7 @@ Read a file with parsed frontmatter.
 }
 ```
 
-### `vaultfs append <path>`
+### `vault-fs append <path>`
 
 Append content to a file. Creates file (and parent dirs) if missing.
 
@@ -113,7 +113,7 @@ Append content to a file. Creates file (and parent dirs) if missing.
 
 **Output**: Text (action command)
 
-### `vaultfs prepend <path>`
+### `vault-fs prepend <path>`
 
 Prepend content after frontmatter (not at byte 0).
 
@@ -123,7 +123,7 @@ Prepend content after frontmatter (not at byte 0).
 
 **Output**: Text (action command)
 
-### `vaultfs move <path>`
+### `vault-fs move <path>`
 
 Move or rename a file. Creates target directories automatically.
 
@@ -133,13 +133,13 @@ Move or rename a file. Creates target directories automatically.
 
 **Output**: Text (action command)
 
-### `vaultfs delete <path>`
+### `vault-fs delete <path>`
 
 Permanently delete a file.
 
 **Output**: Text (action command)
 
-### `vaultfs list`
+### `vault-fs list`
 
 List files in the vault.
 
@@ -157,13 +157,13 @@ List files in the vault.
 ]
 ```
 
-### `vaultfs folders`
+### `vault-fs folders`
 
 List all directories (excludes `.vaultfs/`).
 
 **Output**: JSON array (query command)
 
-### `vaultfs mkdir <path>`
+### `vault-fs mkdir <path>`
 
 Create directories recursively.
 
@@ -173,7 +173,7 @@ Create directories recursively.
 
 ## Recent Files
 
-### `vaultfs recent`
+### `vault-fs recent`
 
 List recently modified files, sorted by modification time (newest first).
 
@@ -185,13 +185,13 @@ List recently modified files, sorted by modification time (newest first).
 
 **Output**: JSON array (query command)
 
-Same structure as `vaultfs list` output.
+Same structure as `vault-fs list` output.
 
 ---
 
 ## Search
 
-### `vaultfs search <query>`
+### `vault-fs search <query>`
 
 Full-text search using bleve index. Index is lazily rebuilt when stale.
 
@@ -213,7 +213,7 @@ Uses AND semantics by default: `"abc def"` requires both terms to be present. Us
 ]
 ```
 
-### `vaultfs search:context <query>`
+### `vault-fs search:context <query>`
 
 Search with matching line context.
 
@@ -234,7 +234,7 @@ Search with matching line context.
 ]
 ```
 
-### `vaultfs index rebuild`
+### `vault-fs index rebuild`
 
 Force rebuild the search index.
 
@@ -244,7 +244,7 @@ Force rebuild the search index.
 
 ## Tags
 
-### `vaultfs tags`
+### `vault-fs tags`
 
 List all tags from frontmatter and inline `#tag` syntax.
 
@@ -262,7 +262,7 @@ List all tags from frontmatter and inline `#tag` syntax.
 ]
 ```
 
-### `vaultfs tag <name>`
+### `vault-fs tag <name>`
 
 List files containing a specific tag. Supports nested tags (e.g., `project/alpha`).
 
@@ -272,7 +272,7 @@ List files containing a specific tag. Supports nested tags (e.g., `project/alpha
 
 ## Tasks
 
-### `vaultfs tasks`
+### `vault-fs tasks`
 
 Extract checkbox tasks from all vault files.
 
@@ -304,7 +304,7 @@ Extract checkbox tasks from all vault files.
 **Mentions**: `@name` patterns
 **Tags**: Inline `#tag` (excludes `#due/...`)
 
-### `vaultfs task toggle <path>`
+### `vault-fs task toggle <path>`
 
 Toggle a task checkbox between `- [ ]` and `- [x]`.
 
@@ -318,13 +318,13 @@ Toggle a task checkbox between `- [ ]` and `- [x]`.
 
 ## Properties
 
-### `vaultfs properties <path>`
+### `vault-fs properties <path>`
 
 Read all YAML frontmatter properties.
 
 **Output**: JSON object (query command)
 
-### `vaultfs property set <path>`
+### `vault-fs property set <path>`
 
 Set a frontmatter property. Creates frontmatter block if missing.
 
@@ -335,7 +335,7 @@ Set a frontmatter property. Creates frontmatter block if missing.
 
 **Output**: Text (action command)
 
-### `vaultfs property remove <path>`
+### `vault-fs property remove <path>`
 
 Remove a frontmatter property. Idempotent (no error if missing).
 
@@ -349,7 +349,7 @@ Remove a frontmatter property. Idempotent (no error if missing).
 
 ## Outline
 
-### `vaultfs outline <path>`
+### `vault-fs outline <path>`
 
 Extract heading structure as a nested JSON tree.
 
@@ -374,12 +374,12 @@ Extract heading structure as a nested JSON tree.
 
 ## Help
 
-### `vaultfs help`
+### `vault-fs help`
 
 Display comprehensive built-in usage guide covering all commands, flags, vault discovery, output format behavior, search semantics, task metadata parsing, and examples.
 
 **Output**: Text (always)
 
 ```bash
-vaultfs help
+vault-fs help
 ```
