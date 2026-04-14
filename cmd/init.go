@@ -70,9 +70,13 @@ func init() {
 // runInit creates a new vault at the given path.
 func runInit(vaultPath string, preset string, extraDirs []string) error {
 	// Check if vault already exists
+	exists := false
 	if _, err := os.Stat(filepath.Join(vaultPath, ".vaultfs")); err == nil {
-		fmt.Printf("Vault already exists at %s\n", vaultPath)
-		return nil
+		exists = true
+		if preset == "" && len(extraDirs) == 0 {
+			fmt.Printf("Vault already exists at %s\n", vaultPath)
+			return nil
+		}
 	}
 
 	// Create .vaultfs directory
@@ -93,8 +97,9 @@ func runInit(vaultPath string, preset string, extraDirs []string) error {
 	if preset != "" {
 		p, ok := cfg.Presets[preset]
 		if !ok {
-			// Clean up the .vaultfs dir we created
-			os.RemoveAll(configDir)
+			if !exists {
+				os.RemoveAll(configDir)
+			}
 			return fmt.Errorf("unknown preset: %s", preset)
 		}
 		allDirs = append(allDirs, p.Directories...)
@@ -120,6 +125,11 @@ func runInit(vaultPath string, preset string, extraDirs []string) error {
 			return fmt.Errorf("failed to create directory %s: %w", d, err)
 		}
 		createdDirs = append(createdDirs, d)
+	}
+
+	if exists {
+		fmt.Printf("Vault already exists at %s — created %d preset directories\n", vaultPath, len(createdDirs))
+		return nil
 	}
 
 	// Write config.yaml

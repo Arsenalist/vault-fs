@@ -101,6 +101,55 @@ func TestInitExistingVaultNoError(t *testing.T) {
 	}
 }
 
+func TestInitExistingVaultWithPresetCreatesDirs(t *testing.T) {
+	tmp := t.TempDir()
+	vaultPath := filepath.Join(tmp, "vault")
+	// Create a vault with just .vaultfs (no preset dirs)
+	os.MkdirAll(filepath.Join(vaultPath, ".vaultfs"), 0755)
+
+	err := runInit(vaultPath, "basic", nil)
+	if err != nil {
+		t.Fatalf("expected no error, got: %v", err)
+	}
+
+	// All preset directories should now exist
+	expectedDirs := []string{
+		"Daily Debrief",
+		"Daily Plan",
+		"Journal",
+		"Meeting Notes",
+		"Projects/Active",
+		"Projects/Archived",
+		"Reports",
+		"Scratchpad",
+		"Stakeholders",
+	}
+	for _, d := range expectedDirs {
+		fullPath := filepath.Join(vaultPath, d)
+		if info, err := os.Stat(fullPath); err != nil || !info.IsDir() {
+			t.Errorf("expected directory %s to exist", d)
+		}
+	}
+}
+
+func TestInitExistingVaultWithExtraDirsCreatesDirs(t *testing.T) {
+	tmp := t.TempDir()
+	vaultPath := filepath.Join(tmp, "vault")
+	os.MkdirAll(filepath.Join(vaultPath, ".vaultfs"), 0755)
+
+	err := runInit(vaultPath, "", []string{"clients/acme", "labs"})
+	if err != nil {
+		t.Fatalf("expected no error, got: %v", err)
+	}
+
+	for _, d := range []string{"clients/acme", "labs"} {
+		fullPath := filepath.Join(vaultPath, d)
+		if info, err := os.Stat(fullPath); err != nil || !info.IsDir() {
+			t.Errorf("expected directory %s to exist", d)
+		}
+	}
+}
+
 func TestInitListPresets(t *testing.T) {
 	result, err := listPresets()
 	if err != nil {
