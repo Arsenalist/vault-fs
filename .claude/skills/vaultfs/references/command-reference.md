@@ -79,6 +79,7 @@ Create a new markdown file.
 | Flag | Type | Default | Description |
 |---|---|---|---|
 | `--content` | string | `""` | File content |
+| `--input` | string | `""` | Read content from file path (use `-` for stdin; takes precedence over `--content`) |
 | `--append` | bool | false | Append to existing file instead of erroring |
 
 **Output**: Text (action command)
@@ -86,6 +87,8 @@ Create a new markdown file.
 - Path should **not** include `.md` — added automatically
 - Parent directories are created automatically
 - Errors if file exists (unless `--append` is set)
+- Use `--input` for large files: `vault-fs create notes/big --input=~/export.md`
+- Pipe from stdin: `cat data.md | vault-fs create notes/data --input=-`
 
 ### `vault-fs read <path>`
 
@@ -110,6 +113,7 @@ Append content to a file. Creates file (and parent dirs) if missing.
 | Flag | Type | Default | Description |
 |---|---|---|---|
 | `--content` | string | `""` | Content to append |
+| `--input` | string | `""` | Read content from file path (use `-` for stdin; takes precedence over `--content`) |
 
 **Output**: Text (action command)
 
@@ -120,6 +124,7 @@ Prepend content after frontmatter (not at byte 0).
 | Flag | Type | Default | Description |
 |---|---|---|---|
 | `--content` | string | `""` | Content to prepend |
+| `--input` | string | `""` | Read content from file path (use `-` for stdin; takes precedence over `--content`) |
 
 **Output**: Text (action command)
 

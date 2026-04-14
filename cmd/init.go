@@ -71,7 +71,8 @@ func init() {
 func runInit(vaultPath string, preset string, extraDirs []string) error {
 	// Check if vault already exists
 	if _, err := os.Stat(filepath.Join(vaultPath, ".vaultfs")); err == nil {
-		return fmt.Errorf("vault already exists at %s", vaultPath)
+		fmt.Printf("Vault already exists at %s\n", vaultPath)
+		return nil
 	}
 
 	// Create .vaultfs directory

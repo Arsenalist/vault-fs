@@ -28,6 +28,27 @@ type ReadResult struct {
 	Size       int64          `json:"size"`
 }
 
+// resolveContent returns the content to use for a command.
+// If inputPath is set, it reads from that file (takes precedence over contentFlag).
+// If inputPath is "-", it reads from stdin.
+func resolveContent(contentFlag, inputPath string) (string, error) {
+	if inputPath != "" {
+		if inputPath == "-" {
+			data, err := os.ReadFile("/dev/stdin")
+			if err != nil {
+				return "", fmt.Errorf("failed to read from stdin: %w", err)
+			}
+			return string(data), nil
+		}
+		data, err := os.ReadFile(inputPath)
+		if err != nil {
+			return "", fmt.Errorf("failed to read input file: %w", err)
+		}
+		return string(data), nil
+	}
+	return contentFlag, nil
+}
+
 // --- Core functions (testable without cobra) ---
 
 func runCreate(vaultPath, path, content string, appendMode bool) error {
@@ -263,7 +284,12 @@ var createCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		content, _ := cmd.Flags().GetString("content")
+		contentFlag, _ := cmd.Flags().GetString("content")
+		inputFlag, _ := cmd.Flags().GetString("input")
+		content, err := resolveContent(contentFlag, inputFlag)
+		if err != nil {
+			return err
+		}
 		appendFlag, _ := cmd.Flags().GetBool("append")
 		if err := runCreate(vaultPath, args[0], content, appendFlag); err != nil {
 			return err
@@ -308,7 +334,12 @@ var appendCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		content, _ := cmd.Flags().GetString("content")
+		contentFlag, _ := cmd.Flags().GetString("content")
+		inputFlag, _ := cmd.Flags().GetString("input")
+		content, err := resolveContent(contentFlag, inputFlag)
+		if err != nil {
+			return err
+		}
 		if err := runAppend(vaultPath, args[0], content); err != nil {
 			return err
 		}
@@ -326,7 +357,12 @@ var prependCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		content, _ := cmd.Flags().GetString("content")
+		contentFlag, _ := cmd.Flags().GetString("content")
+		inputFlag, _ := cmd.Flags().GetString("input")
+		content, err := resolveContent(contentFlag, inputFlag)
+		if err != nil {
+			return err
+		}
 		if err := runPrepend(vaultPath, args[0], content); err != nil {
 			return err
 		}
@@ -440,15 +476,18 @@ var mkdirCmd = &cobra.Command{
 
 func init() {
 	createCmd.Flags().String("content", "", "File content")
+	createCmd.Flags().String("input", "", "Read content from file (use - for stdin)")
 	createCmd.Flags().Bool("append", false, "Append to existing file instead of erroring")
 	rootCmd.AddCommand(createCmd)
 
 	rootCmd.AddCommand(readCmd)
 
 	appendCmd.Flags().String("content", "", "Content to append")
+	appendCmd.Flags().String("input", "", "Read content from file (use - for stdin)")
 	rootCmd.AddCommand(appendCmd)
 
 	prependCmd.Flags().String("content", "", "Content to prepend")
+	prependCmd.Flags().String("input", "", "Read content from file (use - for stdin)")
 	rootCmd.AddCommand(prependCmd)
 
 	moveCmd.Flags().String("to", "", "Target path")

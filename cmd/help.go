@@ -32,10 +32,13 @@ VAULT MANAGEMENT
 
 FILE OPERATIONS
   vault-fs create <path> --content="..."                  Create file (.md auto-added, parent dirs auto-created)
+  vault-fs create <path> --input=<file>                   Create file with content from a file (use - for stdin)
   vault-fs create <path> --content="..." --append         Append to existing file instead of erroring
   vault-fs read <path>                                    Read file (JSON: path, properties, body, modified, size)
   vault-fs append <path> --content="..."                  Append to file (creates if missing)
+  vault-fs append <path> --input=<file>                   Append content from a file (use - for stdin)
   vault-fs prepend <path> --content="..."                 Prepend after frontmatter
+  vault-fs prepend <path> --input=<file>                  Prepend content from a file (use - for stdin)
   vault-fs move <path> --to=<target>                      Move/rename (auto-creates target dirs)
   vault-fs delete <path>                                  Delete file
   vault-fs list [--folder=<dir>] [--ext=<ext>]            List files (default: .md)

@@ -90,6 +90,12 @@ vault-fs info
 # Create (auto-adds .md, auto-creates parent dirs)
 vault-fs create notes/standup --content="# Standup\n\nToday's notes"
 
+# Create from a file (useful for large content)
+vault-fs create notes/imported --input=/path/to/source.md
+
+# Pipe content from stdin
+cat draft.md | vault-fs create notes/draft --input=-
+
 # Create with append mode (appends if file exists)
 vault-fs create notes/standup --content="\n- New item" --append
 
@@ -99,8 +105,14 @@ vault-fs read notes/standup.md
 # Append (creates file if missing)
 vault-fs append notes/standup.md --content="\n## Update\nNew section"
 
+# Append from a file
+vault-fs append notes/standup.md --input=/path/to/extra-content.md
+
 # Prepend (inserts after frontmatter)
 vault-fs prepend notes/standup.md --content="**Priority: High**\n\n"
+
+# Prepend from a file
+vault-fs prepend notes/standup.md --input=/path/to/header.md
 
 # Move / rename
 vault-fs move notes/old.md --to=archive/old.md
@@ -269,3 +281,4 @@ vault-fs recent --days=1               # Today's activity
 10. **Use `--format=text`** when you want human-readable output from query commands.
 11. **Directories with spaces work** — the basic preset includes "Daily Debrief", "Meeting Notes", etc.
 12. **Run `vault-fs help`** for comprehensive built-in usage guide covering all commands and flags.
+13. **Use `--input` for large content** — `create`, `append`, and `prepend` accept `--input=<file>` to read content from a file instead of `--content`. Use `--input=-` to read from stdin.

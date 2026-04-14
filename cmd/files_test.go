@@ -218,6 +218,91 @@ func TestPrependWithoutFrontmatter(t *testing.T) {
 	}
 }
 
+// --- input flag (read content from file) ---
+
+func TestResolveContentFromFlag(t *testing.T) {
+	content, err := resolveContent("hello world", "")
+	if err != nil {
+		t.Fatalf("resolveContent failed: %v", err)
+	}
+	if content != "hello world" {
+		t.Errorf("expected 'hello world', got %q", content)
+	}
+}
+
+func TestResolveContentFromInputFile(t *testing.T) {
+	tmp := t.TempDir()
+	inputFile := filepath.Join(tmp, "source.md")
+	os.WriteFile(inputFile, []byte("# From File\n\nLarge content here."), 0644)
+
+	content, err := resolveContent("", inputFile)
+	if err != nil {
+		t.Fatalf("resolveContent failed: %v", err)
+	}
+	if content != "# From File\n\nLarge content here." {
+		t.Errorf("unexpected content: %q", content)
+	}
+}
+
+func TestResolveContentInputOverridesContent(t *testing.T) {
+	tmp := t.TempDir()
+	inputFile := filepath.Join(tmp, "source.md")
+	os.WriteFile(inputFile, []byte("from file"), 0644)
+
+	content, err := resolveContent("from flag", inputFile)
+	if err != nil {
+		t.Fatalf("resolveContent failed: %v", err)
+	}
+	if content != "from file" {
+		t.Errorf("expected --input to take precedence, got %q", content)
+	}
+}
+
+func TestResolveContentInputFileNotFound(t *testing.T) {
+	_, err := resolveContent("", "/nonexistent/path/file.md")
+	if err == nil {
+		t.Error("expected error for nonexistent input file")
+	}
+}
+
+func TestCreateFromInputFile(t *testing.T) {
+	vaultPath := setupVault(t)
+	tmp := t.TempDir()
+	inputFile := filepath.Join(tmp, "large-doc.md")
+	os.WriteFile(inputFile, []byte("# Large Document\n\nLots of content here."), 0644)
+
+	content, _ := resolveContent("", inputFile)
+	err := runCreate(vaultPath, "imported/doc", content, false)
+	if err != nil {
+		t.Fatalf("create from input failed: %v", err)
+	}
+
+	data, _ := os.ReadFile(filepath.Join(vaultPath, "imported", "doc.md"))
+	if string(data) != "# Large Document\n\nLots of content here." {
+		t.Errorf("unexpected content: %q", string(data))
+	}
+}
+
+func TestAppendFromInputFile(t *testing.T) {
+	vaultPath := setupVault(t)
+	os.WriteFile(filepath.Join(vaultPath, "note.md"), []byte("existing"), 0644)
+
+	tmp := t.TempDir()
+	inputFile := filepath.Join(tmp, "extra.md")
+	os.WriteFile(inputFile, []byte("\nappended from file"), 0644)
+
+	content, _ := resolveContent("", inputFile)
+	err := runAppend(vaultPath, "note.md", content)
+	if err != nil {
+		t.Fatalf("append from input failed: %v", err)
+	}
+
+	data, _ := os.ReadFile(filepath.Join(vaultPath, "note.md"))
+	if string(data) != "existing\nappended from file" {
+		t.Errorf("unexpected content: %q", string(data))
+	}
+}
+
 // --- move/delete/list/folders/mkdir ---
 
 func TestMoveAutoTargetDirs(t *testing.T) {

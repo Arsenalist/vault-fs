@@ -90,14 +90,14 @@ func TestInitPresetPlusDirs(t *testing.T) {
 	}
 }
 
-func TestInitErrorOnExistingVault(t *testing.T) {
+func TestInitExistingVaultNoError(t *testing.T) {
 	tmp := t.TempDir()
 	vaultPath := filepath.Join(tmp, "vault")
 	os.MkdirAll(filepath.Join(vaultPath, ".vaultfs"), 0755)
 
 	err := runInit(vaultPath, "", nil)
-	if err == nil {
-		t.Fatal("expected error for existing vault, got nil")
+	if err != nil {
+		t.Fatalf("expected no error for existing vault, got: %v", err)
 	}
 }
 

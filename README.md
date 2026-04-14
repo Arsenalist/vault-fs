@@ -29,6 +29,12 @@ vault-fs init --preset=basic
 # Create a note (auto-adds .md, auto-creates parent dirs)
 vault-fs create "Daily Plan/2026-04-13" --content="## Priorities\n\n- [ ] Ship feature\n- [ ] Review PRs"
 
+# Create from a file (for large content)
+vault-fs create "imports/report" --input=~/Downloads/report.md
+
+# Pipe content from stdin
+cat draft.md | vault-fs create "notes/draft" --input=-
+
 # Read it back (JSON with parsed frontmatter)
 vault-fs read "Daily Plan/2026-04-13.md"
 
@@ -56,6 +62,7 @@ vault-fs help
 - **`create`** — Create files with content, auto `.md` extension, auto parent dirs
 - **`read`** — Returns parsed frontmatter + body as structured JSON
 - **`append`** / **`prepend`** — Append creates missing files; prepend inserts after frontmatter
+- **`--input`** — All write commands accept `--input=<file>` to read content from a file (use `-` for stdin)
 - **`move`** / **`delete`** — Move with auto target dirs, permanent delete
 - **`list`** / **`folders`** / **`mkdir`** — File discovery and directory management
 
