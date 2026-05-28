@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -9,6 +11,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/zarar/vaultfs/internal/markdown"
 	"github.com/zarar/vaultfs/internal/output"
+	"github.com/zarar/vaultfs/internal/vfs"
 )
 
 // VaultTask extends markdown.Task with the file path.
@@ -82,6 +85,9 @@ func runTaskToggle(vaultPath, path string, line int) error {
 
 	data, err := os.ReadFile(fullPath)
 	if err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			return vfs.NewNotFound(path)
+		}
 		return err
 	}
 
@@ -156,8 +162,9 @@ var taskToggleCmd = &cobra.Command{
 			return err
 		}
 		line, _ := cmd.Flags().GetInt("line")
-		if err := runTaskToggle(vaultPath, args[0], line); err != nil {
-			return err
+		err = runTaskToggle(vaultPath, args[0], line)
+		if handled, e := handleNotFound(cmd, false, err); handled || e != nil {
+			return e
 		}
 		fmt.Printf("Toggled task at %s:%d\n", args[0], line)
 		return nil

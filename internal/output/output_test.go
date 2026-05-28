@@ -77,6 +77,32 @@ func TestErrorText(t *testing.T) {
 	}
 }
 
+func TestWriteNotFoundJSON(t *testing.T) {
+	var buf bytes.Buffer
+	WriteNotFound(&buf, FormatJSON, "notes/missing.md")
+
+	var result map[string]any
+	if err := json.Unmarshal(buf.Bytes(), &result); err != nil {
+		t.Fatalf("output is not valid JSON: %v", err)
+	}
+	if found, ok := result["found"].(bool); !ok || found {
+		t.Errorf("expected found=false, got %v", result["found"])
+	}
+	if result["path"] != "notes/missing.md" {
+		t.Errorf("expected path=notes/missing.md, got %v", result["path"])
+	}
+}
+
+func TestWriteNotFoundText(t *testing.T) {
+	var buf bytes.Buffer
+	WriteNotFound(&buf, FormatText, "notes/missing.md")
+
+	expected := "not found: notes/missing.md\n"
+	if buf.String() != expected {
+		t.Errorf("expected %q, got %q", expected, buf.String())
+	}
+}
+
 func TestDefaultFormatQuery(t *testing.T) {
 	f := ResolveFormat("", true)
 	if f != FormatJSON {

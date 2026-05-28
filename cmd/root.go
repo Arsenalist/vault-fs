@@ -1,11 +1,14 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/zarar/vaultfs/internal/output"
 	"github.com/zarar/vaultfs/internal/vault"
+	"github.com/zarar/vaultfs/internal/vfs"
 )
 
 var (
@@ -30,6 +33,21 @@ func Execute() {
 func resolveVault() (string, error) {
 	cwd, _ := os.Getwd()
 	return vault.Discover(vaultFlag, cwd)
+}
+
+// handleNotFound converts a *vfs.NotFoundError into a structured response
+// on stdout and signals the caller to exit 0. Real errors pass through.
+func handleNotFound(cmd *cobra.Command, isQuery bool, err error) (bool, error) {
+	if err == nil {
+		return false, nil
+	}
+	var nf *vfs.NotFoundError
+	if errors.As(err, &nf) {
+		format := output.ResolveFormat(formatFlag, isQuery)
+		output.WriteNotFound(cmd.OutOrStdout(), format, nf.Path)
+		return true, nil
+	}
+	return false, err
 }
 
 func init() {

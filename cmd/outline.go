@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -9,11 +11,15 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/zarar/vaultfs/internal/markdown"
 	"github.com/zarar/vaultfs/internal/output"
+	"github.com/zarar/vaultfs/internal/vfs"
 )
 
 func runOutline(vaultPath, path string) ([]*markdown.Heading, error) {
 	data, err := os.ReadFile(filepath.Join(vaultPath, path))
 	if err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			return nil, vfs.NewNotFound(path)
+		}
 		return nil, err
 	}
 	result := markdown.ExtractOutline(data)
@@ -33,8 +39,8 @@ var outlineCmd = &cobra.Command{
 			return err
 		}
 		outline, err := runOutline(vaultPath, args[0])
-		if err != nil {
-			return err
+		if handled, e := handleNotFound(cmd, true, err); handled || e != nil {
+			return e
 		}
 		format := output.ResolveFormat(formatFlag, true)
 		if format == output.FormatJSON {

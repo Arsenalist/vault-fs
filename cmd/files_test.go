@@ -2,9 +2,12 @@ package cmd
 
 import (
 	"encoding/json"
+	"errors"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/zarar/vaultfs/internal/vfs"
 )
 
 // --- create ---
@@ -132,6 +135,19 @@ func TestReadNonexistent(t *testing.T) {
 	}
 }
 
+func TestReadNotFoundReturnsTypedError(t *testing.T) {
+	vaultPath := setupVault(t)
+
+	_, err := runRead(vaultPath, "missing.md")
+	var nf *vfs.NotFoundError
+	if !errors.As(err, &nf) {
+		t.Fatalf("expected *vfs.NotFoundError, got %T: %v", err, err)
+	}
+	if nf.Path != "missing.md" {
+		t.Errorf("expected Path=missing.md, got %q", nf.Path)
+	}
+}
+
 func TestReadJSONMarshal(t *testing.T) {
 	vaultPath := setupVault(t)
 	os.WriteFile(filepath.Join(vaultPath, "test.md"), []byte("hello"), 0644)
@@ -215,6 +231,23 @@ func TestPrependWithoutFrontmatter(t *testing.T) {
 	data, _ := os.ReadFile(filepath.Join(vaultPath, "note.md"))
 	if string(data) != "prepended\nexisting content" {
 		t.Errorf("unexpected: %q", string(data))
+	}
+}
+
+func TestPrependCreatesIfMissing(t *testing.T) {
+	vaultPath := setupVault(t)
+
+	err := runPrepend(vaultPath, "fresh/note.md", "hello")
+	if err != nil {
+		t.Fatalf("prepend on missing file should auto-create, got error: %v", err)
+	}
+
+	data, err := os.ReadFile(filepath.Join(vaultPath, "fresh", "note.md"))
+	if err != nil {
+		t.Fatalf("expected file to be created: %v", err)
+	}
+	if string(data) != "hello" {
+		t.Errorf("expected 'hello', got %q", string(data))
 	}
 }
 
@@ -337,6 +370,27 @@ func TestDelete(t *testing.T) {
 
 	if _, err := os.Stat(filepath.Join(vaultPath, "delete-me.md")); err == nil {
 		t.Error("file should be deleted")
+	}
+}
+
+func TestDeleteMissingIsNoOp(t *testing.T) {
+	vaultPath := setupVault(t)
+
+	if err := runDelete(vaultPath, "never-existed.md"); err != nil {
+		t.Errorf("delete of missing file should be idempotent, got: %v", err)
+	}
+}
+
+func TestMoveMissingSource(t *testing.T) {
+	vaultPath := setupVault(t)
+
+	err := runMove(vaultPath, "ghost.md", "dest.md")
+	var nf *vfs.NotFoundError
+	if !errors.As(err, &nf) {
+		t.Fatalf("expected *vfs.NotFoundError, got %T: %v", err, err)
+	}
+	if nf.Path != "ghost.md" {
+		t.Errorf("expected Path=ghost.md, got %q", nf.Path)
 	}
 }
 

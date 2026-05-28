@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -10,6 +12,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/zarar/vaultfs/internal/markdown"
 	"github.com/zarar/vaultfs/internal/output"
+	"github.com/zarar/vaultfs/internal/vfs"
 )
 
 // FileInfo represents a file listing entry.
@@ -87,7 +90,10 @@ func runRead(vaultPath, path string) (*ReadResult, error) {
 
 	data, err := os.ReadFile(fullPath)
 	if err != nil {
-		return nil, fmt.Errorf("file not found: %s", path)
+		if errors.Is(err, fs.ErrNotExist) {
+			return nil, vfs.NewNotFound(path)
+		}
+		return nil, err
 	}
 
 	info, err := os.Stat(fullPath)
@@ -134,6 +140,12 @@ func runPrepend(vaultPath, path, content string) error {
 
 	data, err := os.ReadFile(fullPath)
 	if err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			if err := os.MkdirAll(filepath.Dir(fullPath), 0755); err != nil {
+				return err
+			}
+			return os.WriteFile(fullPath, []byte(content), 0644)
+		}
 		return err
 	}
 
@@ -182,6 +194,13 @@ func runMove(vaultPath, from, to string) error {
 	fromPath := filepath.Join(vaultPath, from)
 	toPath := filepath.Join(vaultPath, to)
 
+	if _, err := os.Stat(fromPath); err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			return vfs.NewNotFound(from)
+		}
+		return err
+	}
+
 	if err := os.MkdirAll(filepath.Dir(toPath), 0755); err != nil {
 		return err
 	}
@@ -190,7 +209,11 @@ func runMove(vaultPath, from, to string) error {
 }
 
 func runDelete(vaultPath, path string) error {
-	return os.Remove(filepath.Join(vaultPath, path))
+	err := os.Remove(filepath.Join(vaultPath, path))
+	if err != nil && errors.Is(err, fs.ErrNotExist) {
+		return nil
+	}
+	return err
 }
 
 func runList(vaultPath, folder, ext string) ([]FileInfo, error) {
@@ -313,8 +336,8 @@ var readCmd = &cobra.Command{
 			return err
 		}
 		result, err := runRead(vaultPath, args[0])
-		if err != nil {
-			return err
+		if handled, e := handleNotFound(cmd, true, err); handled || e != nil {
+			return e
 		}
 		format := output.ResolveFormat(formatFlag, true)
 		if format == output.FormatJSON {
@@ -384,8 +407,9 @@ var moveCmd = &cobra.Command{
 		if to == "" {
 			return fmt.Errorf("--to flag is required")
 		}
-		if err := runMove(vaultPath, args[0], to); err != nil {
-			return err
+		err = runMove(vaultPath, args[0], to)
+		if handled, e := handleNotFound(cmd, false, err); handled || e != nil {
+			return e
 		}
 		fmt.Printf("Moved %s → %s\n", args[0], to)
 		return nil

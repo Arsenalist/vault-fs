@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 
@@ -9,11 +11,15 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/zarar/vaultfs/internal/markdown"
 	"github.com/zarar/vaultfs/internal/output"
+	"github.com/zarar/vaultfs/internal/vfs"
 )
 
 func runProperties(vaultPath, path string) (map[string]any, error) {
 	data, err := os.ReadFile(filepath.Join(vaultPath, path))
 	if err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			return nil, vfs.NewNotFound(path)
+		}
 		return nil, err
 	}
 	fm, _, err := markdown.ParseFrontmatter(data)
@@ -24,6 +30,13 @@ func runPropertySet(vaultPath, path, name, value string) error {
 	fullPath := filepath.Join(vaultPath, path)
 	data, err := os.ReadFile(fullPath)
 	if err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			if err := os.MkdirAll(filepath.Dir(fullPath), 0755); err != nil {
+				return err
+			}
+			fm := map[string]any{name: value}
+			return writeFrontmatterAndBody(fullPath, fm, nil)
+		}
 		return err
 	}
 
@@ -41,6 +54,9 @@ func runPropertyRemove(vaultPath, path, name string) error {
 	fullPath := filepath.Join(vaultPath, path)
 	data, err := os.ReadFile(fullPath)
 	if err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			return vfs.NewNotFound(path)
+		}
 		return err
 	}
 
@@ -83,8 +99,8 @@ var propertiesCmd = &cobra.Command{
 			return err
 		}
 		props, err := runProperties(vaultPath, args[0])
-		if err != nil {
-			return err
+		if handled, e := handleNotFound(cmd, true, err); handled || e != nil {
+			return e
 		}
 		format := output.ResolveFormat(formatFlag, true)
 		if format == output.FormatJSON {
@@ -131,8 +147,9 @@ var propertyRemoveCmd = &cobra.Command{
 			return err
 		}
 		name, _ := cmd.Flags().GetString("name")
-		if err := runPropertyRemove(vaultPath, args[0], name); err != nil {
-			return err
+		err = runPropertyRemove(vaultPath, args[0], name)
+		if handled, e := handleNotFound(cmd, false, err); handled || e != nil {
+			return e
 		}
 		fmt.Printf("Removed %s from %s\n", name, args[0])
 		return nil

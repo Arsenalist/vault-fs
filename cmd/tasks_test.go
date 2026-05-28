@@ -1,9 +1,12 @@
 package cmd
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/zarar/vaultfs/internal/vfs"
 )
 
 func TestTasksAll(t *testing.T) {
@@ -113,6 +116,19 @@ func TestTaskToggle(t *testing.T) {
 	lines = splitLines(string(data))
 	if lines[1] != "- [ ] Buy milk" {
 		t.Errorf("expected toggled back, got %q", lines[1])
+	}
+}
+
+func TestTaskToggleNotFound(t *testing.T) {
+	vaultPath := setupVault(t)
+
+	err := runTaskToggle(vaultPath, "missing.md", 1)
+	var nf *vfs.NotFoundError
+	if !errors.As(err, &nf) {
+		t.Fatalf("expected *vfs.NotFoundError, got %T: %v", err, err)
+	}
+	if nf.Path != "missing.md" {
+		t.Errorf("expected Path=missing.md, got %q", nf.Path)
 	}
 }
 

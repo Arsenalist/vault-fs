@@ -1,9 +1,12 @@
 package cmd
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/zarar/vaultfs/internal/vfs"
 )
 
 func TestOutlineNested(t *testing.T) {
@@ -35,6 +38,19 @@ func TestOutlineNoHeadings(t *testing.T) {
 	}
 	if len(outline) != 0 {
 		t.Errorf("expected empty, got %d", len(outline))
+	}
+}
+
+func TestOutlineNotFound(t *testing.T) {
+	vaultPath := setupVault(t)
+
+	_, err := runOutline(vaultPath, "missing.md")
+	var nf *vfs.NotFoundError
+	if !errors.As(err, &nf) {
+		t.Fatalf("expected *vfs.NotFoundError, got %T: %v", err, err)
+	}
+	if nf.Path != "missing.md" {
+		t.Errorf("expected Path=missing.md, got %q", nf.Path)
 	}
 }
 

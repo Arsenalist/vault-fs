@@ -1,10 +1,13 @@
 package cmd
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/zarar/vaultfs/internal/vfs"
 )
 
 func TestPropertiesRead(t *testing.T) {
@@ -101,5 +104,52 @@ func TestPropertyRemoveIdempotent(t *testing.T) {
 	err := runPropertyRemove(vaultPath, "note.md", "nonexistent")
 	if err != nil {
 		t.Fatalf("property remove should be idempotent, got: %v", err)
+	}
+}
+
+func TestPropertiesNotFound(t *testing.T) {
+	vaultPath := setupVault(t)
+
+	_, err := runProperties(vaultPath, "missing.md")
+	var nf *vfs.NotFoundError
+	if !errors.As(err, &nf) {
+		t.Fatalf("expected *vfs.NotFoundError, got %T: %v", err, err)
+	}
+	if nf.Path != "missing.md" {
+		t.Errorf("expected Path=missing.md, got %q", nf.Path)
+	}
+}
+
+func TestPropertySetAutoCreatesMissingFile(t *testing.T) {
+	vaultPath := setupVault(t)
+
+	err := runPropertySet(vaultPath, "new/note.md", "tag", "draft")
+	if err != nil {
+		t.Fatalf("property set on missing file should auto-create, got: %v", err)
+	}
+
+	data, err := os.ReadFile(filepath.Join(vaultPath, "new", "note.md"))
+	if err != nil {
+		t.Fatalf("expected file created: %v", err)
+	}
+	content := string(data)
+	if !strings.HasPrefix(content, "---") {
+		t.Errorf("expected frontmatter at start, got: %q", content)
+	}
+	if !strings.Contains(content, "tag: draft") {
+		t.Errorf("expected tag in frontmatter, got: %q", content)
+	}
+}
+
+func TestPropertyRemoveNotFound(t *testing.T) {
+	vaultPath := setupVault(t)
+
+	err := runPropertyRemove(vaultPath, "missing.md", "any")
+	var nf *vfs.NotFoundError
+	if !errors.As(err, &nf) {
+		t.Fatalf("expected *vfs.NotFoundError, got %T: %v", err, err)
+	}
+	if nf.Path != "missing.md" {
+		t.Errorf("expected Path=missing.md, got %q", nf.Path)
 	}
 }
